@@ -13,7 +13,7 @@ type User struct {
 	ID                 primitive.ObjectID `bson:"_id"`
 	First_name         *string            `json:"first_name" validate:"required,min=2,max=100"`                 //validasi required yang di perlukan, min 2 karakter, max 100
 	Last_name          *string            `json:"last_name" validate:"required,min=2,max=100"`                  //validasi required yang di perlukan, min 2 karakter, max 100
-	Password           *string            `json:"password" validate:"required,min=6"`                           //validasi required yang di perlukan, min 2 karakter
+	Password           *string            `json:"password"`                                                     //validasi required yang di perlukan, min 2 karakter
 	Email              *string            `json:"email" validate:"email,required"`                              //validasi required yang di perlukan email wajib
 	Phone              *int               `json:"phone" validate:"required"`                                    //validasi required yang di perlukan password wajib
 	Token              *string            `json:"token"`                                                        //validasi required yang di perlukan token wajib
