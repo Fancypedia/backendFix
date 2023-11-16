@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"golangsidang/database"
 	"golangsidang/models"
+	"golangsidang/responses"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/whatsauth/watoken"
@@ -138,6 +141,18 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
+		// Additional validation for email format
+		if len(*user.Email) == 0 || !unicode.IsDigit(rune((*user.Email)[0])) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Email must start with a digit"})
+			return
+		}
+		// Additional validation for email domain
+		if !strings.HasSuffix(*user.Email, "@std.ulbi.ac.id") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email domain. Must end with @std.ulbi.ac.id"})
+			return
+		}
+
+		// Validate the rest of the user fields
 		validateErr := validate.Struct(user)
 		if validateErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validateErr.Error()})
@@ -194,7 +209,7 @@ func Signup() gin.HandlerFunc {
 		privateKey, publicKey := watoken.GenerateKey()
 
 		//generate token for user awangga
-		userid := "fancypedia"
+		userid := "SAPRU"
 		tokenstring, err := watoken.Encode(userid, privateKey)
 		if err != nil {
 			fmt.Println(err)
@@ -436,5 +451,24 @@ func GetUser() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, user)
+	}
+}
+
+func GetUserAll() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		userId := c.Param("usersGetId")
+		var user models.User
+		defer cancel()
+
+		objId, _ := primitive.ObjectIDFromHex(userId)
+
+		err := userAllCollection.FindOne(ctx, bson.M{"_id": objId}).Decode(&user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, responses.GetallUser{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
+			return
+		}
+
+		c.JSON(http.StatusOK, responses.GetallUser{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": user}})
 	}
 }
