@@ -63,7 +63,7 @@ func GetBarang() gin.HandlerFunc {
 		defer cancel()
 
 		objId, _ := primitive.ObjectIDFromHex(barangId)
-		err := barangAllCollection.FindOne(ctx, models.Barang{ID: objId}).Decode(&barang)
+		err := barangAllCollection.FindOne(ctx, bson.M{"_id": objId}).Decode(&barang)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.GetallUser{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
 			return
